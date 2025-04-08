@@ -47,7 +47,10 @@ const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
           title={`${location.Title}, ${location.State}`}
           defaultCollapsed={true}
         >
-          <LocationWeather location={location} />
+          <LocationWeather
+            location={location}
+            httpClient={props.context.httpClient}
+          />
         </Accordion>
       ))}
     </>
