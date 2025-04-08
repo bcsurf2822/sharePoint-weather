@@ -4,13 +4,7 @@ import type { IWeatherWpProps } from "./IWeatherWpProps";
 import { getSP } from "../../../pnpjsConfig";
 import { useState, useCallback, useEffect } from "react";
 import { Accordion } from "@pnp/spfx-controls-react";
-// import { escape } from "@microsoft/sp-lodash-subset";
-
-interface IWeatherListItem {
-  Id: number;
-  Title: string;
-  State: string;
-}
+import { IWeatherListItem } from "../../../models/IWeatherListItem";
 
 const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
   const [locations, setLocations] = useState<IWeatherListItem[]>([]);
@@ -46,7 +40,7 @@ const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
       {locations.map((location) => (
         <Accordion
           key={location.Id}
-          title={location.Title}
+          title={`${location.Title}, ${location.State}`}
           defaultCollapsed={true}
         >
           {location.Title}, {location.State}
