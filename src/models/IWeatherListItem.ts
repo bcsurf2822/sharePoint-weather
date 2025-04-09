@@ -1,5 +1,6 @@
 export interface IWeatherListItem {
   Id: number;
-  Title: string;
+  Title?: string;
+  City: string;
   State: string;
 }

@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useState, useEffect, useCallback } from "react";
 import { IWeatherListItem } from "../../../models/IWeatherListItem";
-
 import { IWeatherResponse } from "../../../models/IWeatherResponse";
 import styles from "./LocationWeather.module.scss";
 import { HttpClient } from "@microsoft/sp-http";
@@ -27,7 +26,7 @@ const LocationWeather: React.FC<LocationWeatherProps> = ({
     try {
       const weatherService = new WeatherService(httpClient);
       const data = await weatherService.getWeather(
-        location.Title,
+        location.City,
         location.State,
         "us"
       );
