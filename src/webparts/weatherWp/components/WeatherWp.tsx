@@ -3,16 +3,17 @@ import * as React from "react";
 import type { IWeatherWpProps } from "./IWeatherWpProps";
 import { getSP } from "../../../pnpjsConfig";
 import { useState, useCallback, useEffect } from "react";
-import { Accordion } from "@pnp/spfx-controls-react";
+import { Accordion, FieldPicker, ISPField } from "@pnp/spfx-controls-react";
 import { IWeatherListItem } from "../../../models/IWeatherListItem";
 import LocationWeather from "./LocationWeather";
+import { FieldsOrderBy } from "@pnp/spfx-controls-react/lib/services/ISPService";
 // import { IWeatherResponse } from "../../../models/IWeatherResponse";
 
 const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
   // const [weatherData, setWeatherData] = useState<IWeatherResponse[]>([]);
   // const [loading, setLoading] = useState<boolean>(false);
   const [locations, setLocations] = useState<IWeatherListItem[]>([]);
-
+  const [selectedField, setSelectedField] = useState<ISPField | null>(null);
   const getLocationListItems = useCallback(async (): Promise<void> => {
     if (!props.context) {
       return;
@@ -39,8 +40,30 @@ const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
     void getLocationListItems();
   }, [getLocationListItems]);
 
+  const onFieldPickerChanged = (fields: ISPField | ISPField[]) => {
+    console.log("Selected field:", fields);
+    // If multiSelect is false, fields will be a single ISPField object
+    setSelectedField(fields as ISPField);
+  };
+
+  if (selectedField) {
+    console.log("Selected field:", selectedField);
+  }
+
   return (
     <>
+      <FieldPicker
+        context={props.context}
+        group="Content Feedback"
+        includeHidden={false}
+        includeReadOnly={false}
+        label="Select your field(s)"
+        multiSelect={false}
+        orderBy={FieldsOrderBy.Title}
+        listId="8ba652d3-3e3a-49d9-88f3-5d8720ba7359"
+        onSelectionChanged={onFieldPickerChanged}
+        showBlankOption={true}
+      />
       {locations.map((location) => (
         <Accordion
           key={location.Id}
