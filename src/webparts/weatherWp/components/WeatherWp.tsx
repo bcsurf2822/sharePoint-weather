@@ -3,17 +3,21 @@ import * as React from "react";
 import type { IWeatherWpProps } from "./IWeatherWpProps";
 import { getSP } from "../../../pnpjsConfig";
 import { useState, useCallback, useEffect } from "react";
-import { Accordion, FieldPicker, ISPField } from "@pnp/spfx-controls-react";
+import { Accordion } from "@pnp/spfx-controls-react";
 import { IWeatherListItem } from "../../../models/IWeatherListItem";
 import LocationWeather from "./LocationWeather";
-import { FieldsOrderBy } from "@pnp/spfx-controls-react/lib/services/ISPService";
+import { ListItemPicker } from "@pnp/spfx-controls-react/lib/ListItemPicker";
+
 // import { IWeatherResponse } from "../../../models/IWeatherResponse";
 
 const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
   // const [weatherData, setWeatherData] = useState<IWeatherResponse[]>([]);
   // const [loading, setLoading] = useState<boolean>(false);
   const [locations, setLocations] = useState<IWeatherListItem[]>([]);
-  const [selectedField, setSelectedField] = useState<ISPField | null>(null);
+  const [selectedItems, setSelectedItems] = useState<
+    { key: string; name: string; state: string }[]
+  >([]);
+
   const getLocationListItems = useCallback(async (): Promise<void> => {
     if (!props.context) {
       return;
@@ -21,9 +25,11 @@ const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
 
     try {
       const _sp = getSP(props.context);
+
       const locations = await _sp.web.lists
         .getByTitle("East")
         .items.select("Id", "Title", "State")();
+      console.log("Raw SharePoint data:", locations);
       setLocations(
         locations.map((location) => ({
           Id: location.Id,
@@ -40,29 +46,38 @@ const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
     void getLocationListItems();
   }, [getLocationListItems]);
 
-  const onFieldPickerChanged = (fields: ISPField | ISPField[]) => {
-    console.log("Selected field:", fields);
-    // If multiSelect is false, fields will be a single ISPField object
-    setSelectedField(fields as ISPField);
-  };
+  const onSelectedItem = (
+    data: { key: string; name: string; state: string }[]
+  ) => {
+    setSelectedItems(data);
+    console.log("Selected items:", data);
 
-  if (selectedField) {
-    console.log("Selected field:", selectedField);
-  }
+    for (const item of data) {
+      // Find the matching location from our locations array using traditional for loop
+      for (let i = 0; i < locations.length; i++) {
+        if (locations[i].Id.toString() === item.key) {
+          console.log("Found matching location:", {
+            Title: locations[i].Title,
+            State: locations[i].State,
+          });
+          break; // Exit the loop once we found the match
+        }
+      }
+    }
+  };
 
   return (
     <>
-      <FieldPicker
-        context={props.context}
-        group="Content Feedback"
-        includeHidden={false}
-        includeReadOnly={false}
-        label="Select your field(s)"
-        multiSelect={false}
-        orderBy={FieldsOrderBy.Title}
+      <ListItemPicker
         listId="8ba652d3-3e3a-49d9-88f3-5d8720ba7359"
-        onSelectionChanged={onFieldPickerChanged}
-        showBlankOption={true}
+        columnInternalName="Title"
+        keyColumnInternalName="Id"
+        placeholder="Select Location"
+        itemLimit={1}
+        onSelectedItem={onSelectedItem}
+        context={props.context}
+        enableDefaultSuggestions={true}
+        filter="Id ne null"
       />
       {locations.map((location) => (
         <Accordion
