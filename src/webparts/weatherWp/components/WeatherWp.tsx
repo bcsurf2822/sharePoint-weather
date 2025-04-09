@@ -50,6 +50,7 @@ const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
     data: { key: string; name: string; state: string }[]
   ) => {
     setSelectedItems(data);
+    console.log("selectedItems", selectedItems);
     console.log("Selected items:", data);
 
     for (const item of data) {
