@@ -1,6 +1,14 @@
 .location-weather {
   padding: 0.75rem 0.5rem;
 
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-top: 0;
+    margin-bottom: 1rem;
+  }
+
   &__loading {
     padding: 1rem;
     text-align: center;

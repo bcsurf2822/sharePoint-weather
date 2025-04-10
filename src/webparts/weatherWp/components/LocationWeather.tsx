@@ -31,6 +31,7 @@ const LocationWeather: React.FC<LocationWeatherProps> = ({
         "us"
       );
       setWeatherData(data);
+      console.log("Weather data:", data);
     } catch (err) {
       console.error("Error fetching weather data:", err);
       setError("Failed to load weather data. Please try again later.");
@@ -65,6 +66,9 @@ const LocationWeather: React.FC<LocationWeatherProps> = ({
 
   return (
     <div className={styles["location-weather"]}>
+      <h3 className={styles["location-weather__title"]}>
+        Current weather in {location.City}, {location.State}
+      </h3>
       <div className={styles["location-weather__content"]}>
         <div className={styles["location-weather__main"]}>
           <div className={styles["location-weather__temp"]}>

@@ -35,6 +35,6 @@
     ]
   },
   "paths": {
-    "zippedPackage": "solution/spfx-weather.sppkg"
+    "zippedPackage": "solution/current-weather.sppkg"
   }
 }
