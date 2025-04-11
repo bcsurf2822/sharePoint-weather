@@ -19,11 +19,9 @@ export class WeatherService {
     stateCode: string,
     countryCode: string = "us"
   ): Promise<IWeatherResponse> {
-    // Convert cityName and stateCode to lowercase
     const cityNameLower = cityName.toLowerCase();
     const stateCodeLower = stateCode.toLowerCase();
 
-    // First get coordinates
     const geoData = await this.getCoordinates(
       cityNameLower,
       stateCodeLower,
@@ -36,7 +34,6 @@ export class WeatherService {
       );
     }
 
-    // Then get weather using the coordinates
     const { lat, lon } = geoData[0];
     return this.getWeatherByCoordinates(lat, lon);
   }

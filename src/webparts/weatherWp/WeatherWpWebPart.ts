@@ -74,6 +74,7 @@ export default class WeatherWpWebPart extends BaseClientSideWebPart<IWeatherWpWe
         context: this.context,
         title: this.properties.title,
         refreshTrigger: this._refreshTrigger,
+  
       }
     );
 
