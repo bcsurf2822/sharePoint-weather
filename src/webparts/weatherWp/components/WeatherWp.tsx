@@ -6,10 +6,10 @@ import { useState, useCallback, useEffect } from "react";
 import { IWeatherListItem } from "../../../models/IWeatherListItem";
 import LocationWeather from "./LocationWeather";
 import { ListItemPicker } from "@pnp/spfx-controls-react/lib/ListItemPicker";
-import { Spinner, SpinnerSize } from "@fluentui/react/lib/Spinner"; // Import Spinner
+import { Spinner, SpinnerSize } from "@fluentui/react/lib/Spinner";
+import { Text } from "@fluentui/react/lib/Text";
 
 const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
-  // Add a loading state, initially true
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [locations, setLocations] = useState<IWeatherListItem[]>([]);
   const [selectedLocation, setSelectedLocation] =
@@ -17,11 +17,10 @@ const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
 
   const getLocationListItems = useCallback(async (): Promise<void> => {
     if (!props.context) {
-      setIsLoading(false); // Stop loading if context is missing
+      setIsLoading(false);
       return;
     }
 
-    // Ensure loading is true when starting fetch (though already set initially)
     setIsLoading(true);
     try {
       const _sp = getSP(props.context);
@@ -39,36 +38,30 @@ const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
       setLocations(mappedLocations);
     } catch (error) {
       console.error("Failed to get location list items:", error);
-      // Consider setting locations to empty array on error?
-      // setLocations([]);
     } finally {
-      // *** IMPORTANT: Set loading to false AFTER data is set or an error occurs ***
       setIsLoading(false);
     }
-  }, [props.context]); // Dependency array is correct
+  }, [props.context]);
 
   useEffect(() => {
     console.log(
       `WeatherWp: useEffect fetching locations. Trigger value: ${props.refreshTrigger}`
     );
     void getLocationListItems();
-    // Dependency array should include the function itself
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getLocationListItems, props.refreshTrigger]);
 
   const onSelectedItem = (
     pickerData: { key: string | number; name: string }[]
   ) => {
     console.log("Data from picker:", pickerData);
-    console.log("Current locations state:", JSON.stringify(locations)); // Keep this for debugging
+    console.log("Current locations state:", JSON.stringify(locations));
 
-    // Basic check: If locations is empty, something is wrong (or loading hasn't finished)
     if (locations.length === 0) {
       console.warn(
         "onSelectedItem called while locations state is empty. Loading state:",
         isLoading
       );
-      // Avoid proceeding if locations aren't loaded, even if picker wasn't disabled somehow
+
       return;
     }
 
@@ -103,7 +96,6 @@ const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
         setSelectedLocation(null);
       }
     } else {
-      // Handle case where picker returns empty data (e.g., selection cleared)
       console.log("No item selected in picker or selection cleared.");
       setSelectedLocation(null);
     }
@@ -111,34 +103,38 @@ const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
 
   return (
     <>
-      {/* Optionally show a loading indicator */}
+      {!isLoading && !selectedLocation && (
+        <Text
+          variant="large"
+          block
+          styles={{ root: { marginBottom: 20, color: "#000000" } }}
+        >
+          Select a location to view weather information
+        </Text>
+      )}
+
       {isLoading && (
         <Spinner size={SpinnerSize.medium} label="Loading locations..." />
       )}
 
       <ListItemPicker
         listId="a357ebbd-d75d-4512-8a03-0d7b7c133fdc"
-        columnInternalName="Title" // Still recommend verifying this column vs. City/State data
+        columnInternalName="Title"
         keyColumnInternalName="Id"
-        placeholder={isLoading ? "Loading..." : "Select Location"} // Change placeholder while loading
+        placeholder={isLoading ? "Loading..." : "Select Location"}
         itemLimit={1}
         onSelectedItem={onSelectedItem}
         context={props.context}
         enableDefaultSuggestions={true}
-        // *** Disable the picker while loading data ***
         disabled={isLoading}
       />
 
-      {/* Weather display logic remains the same */}
       {!isLoading && selectedLocation && (
         <LocationWeather
           key={selectedLocation.Id}
           location={selectedLocation}
           httpClient={props.context.httpClient}
         />
-      )}
-      {!isLoading && !selectedLocation && (
-        <p>Select a location to view weather information.</p>
       )}
     </>
   );
