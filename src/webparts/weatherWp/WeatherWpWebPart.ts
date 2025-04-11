@@ -23,6 +23,57 @@ export interface IWeatherWpWebPartProps {
 export default class WeatherWpWebPart extends BaseClientSideWebPart<IWeatherWpWebPartProps> {
   private _isDarkTheme: boolean = false;
   private _environmentMessage: string = "";
+  private _dynamicDataProvider: DynamicDataProvider | undefined;
+
+  private readonly _providerSourceId =
+    "7c3fd91e-c64b-4f92-8795-02317e1ca9a5-CitiesProvider";
+  private readonly _propertyIdToWatch = "citiesUpdated";
+
+  private _refreshTrigger: number = 0;
+
+  protected onInit(): Promise<void> {
+    this._dynamicDataProvider = new DynamicDataProvider(this.context);
+
+    // Register for notifications when the component initializes
+    this._registerForNotifications();
+
+    return this._getEnvironmentMessage().then((message) => {
+      this._environmentMessage = message;
+    });
+  }
+
+  private _registerForNotifications(): void {
+    if (!this._dynamicDataProvider) {
+      return;
+    }
+    // Register interest in changes to the 'citiesUpdated' property from our specific source
+    // The framework will call _handleNotification when the provider notifies
+    this._dynamicDataProvider.registerPropertyChanged(
+      this._providerSourceId, // Source ID of the Provider web part
+      this._propertyIdToWatch, // Property ID we care about
+      this._handleNotification // The function to call when notified
+    );
+    console.log(
+      `Consumer registered for notifications from ${this._providerSourceId} for property ${this._propertyIdToWatch}`
+    );
+  }
+
+  private _handleNotification = (): void => {
+    console.log(
+      `Consumer received notification for ${this._propertyIdToWatch}!`
+    );
+
+    // Increment the trigger value. This change needs to be passed to React.
+    this._refreshTrigger++;
+
+    // Re-render the React component tree.
+    // This will pass the new _refreshTrigger value down as a prop.
+    this.render();
+
+    // Note: We could also try fetching the actual property value here if needed
+    // const value = this._dynamicDataProvider.getPropertyValue(this._providerSourceId, this._propertyIdToWatch);
+    // console.log("Current value from provider:", value);
+  };
 
   public render(): void {
     const element: React.ReactElement<IWeatherWpProps> = React.createElement(
@@ -35,16 +86,11 @@ export default class WeatherWpWebPart extends BaseClientSideWebPart<IWeatherWpWe
         userDisplayName: this.context.pageContext.user.displayName,
         context: this.context,
         title: this.properties.title,
+        refreshTrigger: this._refreshTrigger,
       }
     );
 
     ReactDom.render(element, this.domElement);
-  }
-
-  protected onInit(): Promise<void> {
-    return this._getEnvironmentMessage().then((message) => {
-      this._environmentMessage = message;
-    });
   }
 
   private _getEnvironmentMessage(): Promise<string> {
@@ -108,6 +154,15 @@ export default class WeatherWpWebPart extends BaseClientSideWebPart<IWeatherWpWe
   }
 
   protected onDispose(): void {
+    if (this._dynamicDataProvider) {
+      console.log("Consumer unregistering from dynamic data provider.");
+      this._dynamicDataProvider.unregister(
+        this._providerSourceId,
+        this._propertyIdToWatch,
+        this._handleNotification
+      );
+    }
+
     ReactDom.unmountComponentAtNode(this.domElement);
   }
 
