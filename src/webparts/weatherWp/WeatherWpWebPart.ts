@@ -8,6 +8,9 @@ import {
 import { BaseClientSideWebPart } from "@microsoft/sp-webpart-base";
 import { IReadonlyTheme } from "@microsoft/sp-component-base";
 
+import { DynamicProperty } from "@microsoft/sp-component-base";
+import { DynamicDataProvider } from "@microsoft/sp-dynamic-data";
+
 import * as strings from "WeatherWpWebPartStrings";
 import WeatherWp from "./components/WeatherWp";
 import { IWeatherWpProps } from "./components/IWeatherWpProps";
