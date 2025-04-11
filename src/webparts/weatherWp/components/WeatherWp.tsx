@@ -48,10 +48,13 @@ const WeatherWp = (props: IWeatherWpProps): JSX.Element => {
   }, [props.context]); // Dependency array is correct
 
   useEffect(() => {
+    console.log(
+      `WeatherWp: useEffect fetching locations. Trigger value: ${props.refreshTrigger}`
+    );
     void getLocationListItems();
     // Dependency array should include the function itself
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getLocationListItems]);
+  }, [getLocationListItems, props.refreshTrigger]);
 
   const onSelectedItem = (
     pickerData: { key: string | number; name: string }[]

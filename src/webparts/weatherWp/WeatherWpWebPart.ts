@@ -8,8 +8,8 @@ import {
 import { BaseClientSideWebPart } from "@microsoft/sp-webpart-base";
 import { IReadonlyTheme } from "@microsoft/sp-component-base";
 
-import { DynamicProperty } from "@microsoft/sp-component-base";
-import { DynamicDataProvider } from "@microsoft/sp-dynamic-data";
+// import { DynamicProperty } from "@microsoft/sp-component-base";
+// import { DynamicDataProvider } from "@microsoft/sp-dynamic-data";
 
 import * as strings from "WeatherWpWebPartStrings";
 import WeatherWp from "./components/WeatherWp";
@@ -23,7 +23,7 @@ export interface IWeatherWpWebPartProps {
 export default class WeatherWpWebPart extends BaseClientSideWebPart<IWeatherWpWebPartProps> {
   private _isDarkTheme: boolean = false;
   private _environmentMessage: string = "";
-  private _dynamicDataProvider: DynamicDataProvider | undefined;
+  // private _dynamicDataProvider: DynamicDataProvider | undefined;
 
   private readonly _providerSourceId =
     "7c3fd91e-c64b-4f92-8795-02317e1ca9a5-CitiesProvider";
@@ -32,9 +32,6 @@ export default class WeatherWpWebPart extends BaseClientSideWebPart<IWeatherWpWe
   private _refreshTrigger: number = 0;
 
   protected onInit(): Promise<void> {
-    this._dynamicDataProvider = new DynamicDataProvider(this.context);
-
-    // Register for notifications when the component initializes
     this._registerForNotifications();
 
     return this._getEnvironmentMessage().then((message) => {
@@ -43,15 +40,17 @@ export default class WeatherWpWebPart extends BaseClientSideWebPart<IWeatherWpWe
   }
 
   private _registerForNotifications(): void {
-    if (!this._dynamicDataProvider) {
+    // Use the provider directly from the context
+    if (!this.context.dynamicDataProvider) {
+      console.warn(
+        "DynamicDataProvider not available on context during registration."
+      );
       return;
     }
-    // Register interest in changes to the 'citiesUpdated' property from our specific source
-    // The framework will call _handleNotification when the provider notifies
-    this._dynamicDataProvider.registerPropertyChanged(
-      this._providerSourceId, // Source ID of the Provider web part
-      this._propertyIdToWatch, // Property ID we care about
-      this._handleNotification // The function to call when notified
+    this.context.dynamicDataProvider.registerPropertyChanged(
+      this._providerSourceId,
+      this._propertyIdToWatch,
+      this._handleNotification
     );
     console.log(
       `Consumer registered for notifications from ${this._providerSourceId} for property ${this._propertyIdToWatch}`
@@ -62,17 +61,8 @@ export default class WeatherWpWebPart extends BaseClientSideWebPart<IWeatherWpWe
     console.log(
       `Consumer received notification for ${this._propertyIdToWatch}!`
     );
-
-    // Increment the trigger value. This change needs to be passed to React.
     this._refreshTrigger++;
-
-    // Re-render the React component tree.
-    // This will pass the new _refreshTrigger value down as a prop.
     this.render();
-
-    // Note: We could also try fetching the actual property value here if needed
-    // const value = this._dynamicDataProvider.getPropertyValue(this._providerSourceId, this._propertyIdToWatch);
-    // console.log("Current value from provider:", value);
   };
 
   public render(): void {
@@ -154,14 +144,10 @@ export default class WeatherWpWebPart extends BaseClientSideWebPart<IWeatherWpWe
   }
 
   protected onDispose(): void {
-    if (this._dynamicDataProvider) {
-      console.log("Consumer unregistering from dynamic data provider.");
-      this._dynamicDataProvider.unregister(
-        this._providerSourceId,
-        this._propertyIdToWatch,
-        this._handleNotification
-      );
-    }
+   
+    console.log(
+      "Consumer disposing, assuming automatic cleanup for dynamic data listeners."
+    );
 
     ReactDom.unmountComponentAtNode(this.domElement);
   }
